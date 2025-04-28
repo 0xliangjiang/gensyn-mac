@@ -6,6 +6,34 @@ set -e
 # Print commands as they are executed
 set -x
 
+# Check Node.js environment
+echo "Checking Node.js environment..."
+if ! command -v node &> /dev/null; then
+    echo "Node.js is not installed. Installing Node.js..."
+    # For macOS
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install node
+    else
+        echo "Please install Node.js manually for your operating system"
+        exit 1
+    fi
+fi
+echo "Node.js version: $(node --version)"
+
+# Check Python environment
+echo "Checking Python environment..."
+if ! command -v python3 &> /dev/null; then
+    echo "Python3 is not installed. Installing Python3..."
+    # For macOS
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install python
+    else
+        echo "Please install Python3 manually for your operating system"
+        exit 1
+    fi
+fi
+echo "Python version: $(python3 --version)"
+
 # Create and change to working directory
 WORK_DIR="./rl-swarm"
 if [ -d "$WORK_DIR" ]; then
