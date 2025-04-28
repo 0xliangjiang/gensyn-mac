@@ -6,8 +6,6 @@ set -e
 # Print commands as they are executed
 set -x
 
-echo “推特：https://x.com/0xliangjiang”
-
 # Create and change to working directory
 WORK_DIR="./rl-swarm"
 if [ -d "$WORK_DIR" ]; then
