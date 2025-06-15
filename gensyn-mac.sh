@@ -21,7 +21,6 @@ cd ~/Desktop/gensyn/rl-swarm
 # Create and activate virtual environment
 echo "Setting up Python virtual environment..."
 python3.11 -m venv .venv
-source .venv/bin/activate
 
 # Backup existing config if it exists
 if [ -f "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" ]; then
@@ -79,4 +78,4 @@ EOF
 
 echo "Environment setup complete!"
 
-export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh
+cd ~/Desktop/gensyn/rl-swarm && source .venv/bin/activate && export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh
