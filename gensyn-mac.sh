@@ -6,27 +6,13 @@ set -e
 # Print commands as they are executed
 set -x
 
-# Check Node.js environment
-echo "Checking Node.js environment..."
-if ! command -v node &> /dev/null; then
-    echo "Node.js is not installed. Installing Node.js..."
-    # For macOS
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install node
-    else
-        echo "Please install Node.js manually for your operating system"
-        exit 1
-    fi
-fi
-echo "Node.js version: $(node --version)"
-
 # Check Python environment
 echo "Checking Python environment..."
 if ! command -v python3 &> /dev/null; then
     echo "Python3 is not installed. Installing Python3..."
     # For macOS
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install python
+        brew install python@3.11
     else
         echo "Please install Python3 manually for your operating system"
         exit 1
@@ -34,95 +20,70 @@ if ! command -v python3 &> /dev/null; then
 fi
 echo "Python version: $(python3 --version)"
 
-# Create and change to working directory
-WORK_DIR="./rl-swarm"
-if [ -d "$WORK_DIR" ]; then
-    echo "Removing existing directory..."
-    rm -rf "$WORK_DIR"
-fi
-
 # Clone the repository
 echo "Cloning repository..."
-git clone https://github.com/gensyn-ai/rl-swarm.git "$WORK_DIR"
-cd "$WORK_DIR"
+git clone https://github.com/gensyn-ai/rl-swarm.git ~/Desktop/gensyn
+cd ~/Desktop/gensyn
 
 # Create and activate virtual environment
 echo "Setting up Python virtual environment..."
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 
-# # Upgrade pip
-# echo "Upgrading pip..."
-# pip install --upgrade pip
-
-# # Install dependencies
-# echo "Installing dependencies..."
-# pip install -r requirements.txt
-
-# Setup .bashrc
-echo "Setting up environment variables..."
-if [ ! -f ~/.bashrc ]; then
-    touch ~/.bashrc
-fi
-
-# Add environment variables to .bashrc
-cat << EOF >> ~/.bashrc
-export PATH="\$PATH:/usr/local/bin"
-export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
-export PYTHONPATH="\$PYTHONPATH:$WORK_DIR"
-EOF
-
-# Source the updated .bashrc
-source ~/.bashrc
-
-# Setup config directory
-echo "Setting up configuration..."
-CONFIG_DIR="hivemind_exp/configs/mac"
-mkdir -p "$CONFIG_DIR"
-
 # Backup existing config if it exists
-if [ -f "$CONFIG_DIR/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" ]; then
-    mv "$CONFIG_DIR/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" "$CONFIG_DIR/grpo-qwen-2.5-0.5b-deepseek-r1-backup.yaml"
+if [ -f "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" ]; then
+    mv "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1-backup.yaml"
 fi
 
 # Write new configuration
-cat << EOF > "$CONFIG_DIR/grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
-model_name_or_path: Gensyn/Qwen2.5-0.5B-Instruct
+cat << EOF > "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
+# Model arguments
 model_revision: main
-torch_dtype: float32
+torch_dtype: float16
 attn_implementation: default
 bf16: false
 tf32: false
-output_dir: runs/gsm8k/multinode/Qwen2.5-0.5B-Instruct-Gensyn-Swarm
+
+# Dataset arguments
 dataset_id_or_path: 'openai/gsm8k'
-max_steps: 50
-per_device_train_batch_size: 1
-gradient_accumulation_steps: 5
+
+# Training arguments
+max_steps: 50 # Original 450
+gradient_accumulation_steps: 4
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
-  use_reentrant: true
-learning_rate: 5.0e-6
+  use_reentrant: false
+learning_rate: 5.0e-6 # 1.0e-6 as in the deepseek math paper 5-e7 from https://hijkzzz.notion.site/unraveling-rlhf-and-its-variants-engineering-insights#147d9a33ecc9806090f3d5c749d31f05
 lr_scheduler_type: cosine
-warmup_ratio: 0.1
-beta: 0.001
+warmup_ratio: 0.03
+
+# GRPO arguments
+use_vllm: false
+num_generations: 2
+per_device_train_batch_size: 2
+beta: 0.001 # 0.04 as in the deepseek math paper 0.001 from https://hijkzzz.notion.site/unraveling-rlhf-and-its-variants-engineering-insights#147d9a33ecc9806090f3d5c749d31f05
 max_prompt_length: 96
 max_completion_length: 96
-num_generations: 1
-use_vllm: false
-vllm_gpu_memory_utilization: 0.5
-device: mlx_gpu
+
+# Logging arguments
 logging_strategy: steps
-logging_steps: 10
+logging_steps: 2
 report_to:
-- tensorboard
-save_strategy: steps
-save_steps: 100
+- wandb
+save_strategy: "steps"
+save_steps: 25
 seed: 42
+
+# Script arguments
 max_rounds: 10000
 max_grad_norm: 0.5
+
+# Model-specific arguments
+model_name_or_path: unsloth/Qwen2.5-0.5B-Instruct
+output_dir: runs/gsm8k/multinode/Qwen2.5-0.5B-Instruct-Gensyn-Swarm
+
 EOF
 
 echo "Environment setup complete!"
-echo "To run the swarm, execute: ./run_rl_swarm.sh"
 
 export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh
