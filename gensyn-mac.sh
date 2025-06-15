@@ -8,24 +8,15 @@ set -x
 
 # Check Python environment
 echo "Checking Python environment..."
-if ! command -v python3 &> /dev/null; then
-    echo "Python3 is not installed. Installing Python3..."
-    # For macOS
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install python@3.11
-    else
-        echo "Please install Python3 manually for your operating system"
-        exit 1
-    fi
-fi
+brew install python@3.11
 echo "Python version: $(python3 --version)"
 
 mkdir -p ~/Desktop/gensyn
 
 # Clone the repository
 echo "Cloning repository..."
-git clone https://github.com/gensyn-ai/rl-swarm.git ~/Desktop/gensyn
-cd ~/Desktop/gensyn
+git clone https://github.com/gensyn-ai/rl-swarm.git ~/Desktop/gensyn/rl-swarm
+cd ~/Desktop/gensyn/rl-swarm
 
 # Create and activate virtual environment
 echo "Setting up Python virtual environment..."
