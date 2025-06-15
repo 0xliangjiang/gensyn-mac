@@ -20,6 +20,8 @@ if ! command -v python3 &> /dev/null; then
 fi
 echo "Python version: $(python3 --version)"
 
+mkdir ~/Desktop/gensyn
+
 # Clone the repository
 echo "Cloning repository..."
 git clone https://github.com/gensyn-ai/rl-swarm.git ~/Desktop/gensyn
