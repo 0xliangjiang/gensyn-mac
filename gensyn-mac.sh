@@ -20,7 +20,7 @@ if ! command -v python3 &> /dev/null; then
 fi
 echo "Python version: $(python3 --version)"
 
-mkdir ~/Desktop/gensyn
+mkdir -p ~/Desktop/gensyn
 
 # Clone the repository
 echo "Cloning repository..."
