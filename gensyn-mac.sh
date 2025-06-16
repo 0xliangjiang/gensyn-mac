@@ -22,13 +22,11 @@ cd ~/Desktop/gensyn/rl-swarm
 echo "Setting up Python virtual environment..."
 python3.11 -m venv .venv
 
-# Backup existing config if it exists
-if [ -f "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" ]; then
-    mv "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml" "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1-backup.yaml"
-fi
+mv ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1-backup.yaml
 
+touch ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml
 # Write new configuration
-cat << EOF > "~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
+cd ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac && cat << EOF > "grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
 # Model arguments
 model_revision: main
 torch_dtype: float16
