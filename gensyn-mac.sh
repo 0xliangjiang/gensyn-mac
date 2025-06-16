@@ -25,6 +25,7 @@ python3.11 -m venv .venv
 mv ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1-backup.yaml
 
 touch ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac/grpo-qwen-2.5-0.5b-deepseek-r1.yaml
+
 # Write new configuration
 cd ~/Desktop/gensyn/rl-swarm/hivemind_exp/configs/mac && cat << EOF > "grpo-qwen-2.5-0.5b-deepseek-r1.yaml"
 # Model arguments
