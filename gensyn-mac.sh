@@ -77,4 +77,8 @@ EOF
 
 echo "Environment setup complete!"
 
+cd ~/Desktop && cat << EOF > "gensyn.run"
+cd ~/Desktop/gensyn/rl-swarm && source .venv/bin/activate && export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh
+EOF
+
 cd ~/Desktop/gensyn/rl-swarm && source .venv/bin/activate && export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 && ./run_rl_swarm.sh
