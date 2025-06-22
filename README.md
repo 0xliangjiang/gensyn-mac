@@ -1,6 +1,14 @@
 # gensyn-mac
 gensyn mac一键启动脚本
 
+### 安装brew
+
+[https://brew.sh/](https://brew.sh/)
+
+### 安装wget
+
+brew install wget
+
 ### 一键执行脚本
 
 ```shell
