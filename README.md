@@ -19,7 +19,7 @@ wget -O gensyn-mac.sh https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/
 ### 一键执行更新脚本
 
 ```shell
-wget -O gensyn-mac.sh https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/refs/heads/main/gensyn-mac-update.sh && chmod +x gensyn-mac-update.sh && sh gensyn-mac-update.sh
+wget -O gensyn-mac-update.sh https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/refs/heads/main/gensyn-mac-update.sh && chmod +x gensyn-mac-update.sh && sh gensyn-mac-update.sh
 ```
 
 
