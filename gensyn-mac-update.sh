@@ -233,3 +233,5 @@ EOF
 
 # 设置执行权限
 chmod +x ~/Desktop/gensyn/rl-swarm/auto.sh
+
+cp ~/Desktop/swarm.pem ~/Desktop/gensyn/rl-swarm
