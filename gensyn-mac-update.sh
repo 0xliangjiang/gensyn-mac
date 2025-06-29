@@ -235,3 +235,5 @@ EOF
 chmod +x ~/Desktop/gensyn/rl-swarm/auto.sh
 
 cp ~/Desktop/swarm.pem ~/Desktop/gensyn/rl-swarm
+
+cd ~/Desktop/gensyn/rl-swarm && python3.11 -m venv .venv
