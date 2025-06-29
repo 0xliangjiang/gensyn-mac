@@ -1,19 +1,19 @@
 #!/bin/bash
-
-# Exit on any error
 set -e
-
-# Print commands as they are executed
 set -x
 
-cp ~/Desktop/gensyn/rl-swarm/swarm.pem ~/Desktop
+# 确保目录存在
+mkdir -p ~/Desktop/gensyn
 
-mv ~/Desktop/gensyn/rl-swarm ~/Desktop/gensyn/rl-swarm-backup
+# 备份操作
+cp ~/Desktop/gensyn/rl-swarm/swarm.pem ~/Desktop 2>/dev/null || true
+mv ~/Desktop/gensyn/rl-swarm ~/Desktop/gensyn/rl-swarm-backup 2>/dev/null || true
 
+# 克隆新仓库
 cd ~/Desktop/gensyn && git clone https://github.com/gensyn-ai/rl-swarm.git
 
-cd ~/Desktop/gensyn/rl-swarm && cat << EOF > "auto.sh"
-
+# 创建新脚本（使用单引号防止变量展开）
+cd ~/Desktop/gensyn/rl-swarm && cat << 'EOF' > "auto.sh"
 #!/bin/bash
 
 # Mac M4 自动监控重启脚本
@@ -230,3 +230,6 @@ echo ""
 main
 
 EOF
+
+# 设置执行权限
+chmod +x ~/Desktop/gensyn/rl-swarm/auto.sh
