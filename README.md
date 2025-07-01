@@ -22,4 +22,9 @@ wget -O gensyn-mac.sh https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/
 wget -O gensyn-mac-update.sh https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/refs/heads/main/gensyn-mac-update.sh && chmod +x gensyn-mac-update.sh && sh gensyn-mac-update.sh
 ```
 
+### 网络超时
+```shell
+vim ~/Desktop/gensyn/rl-swarm/.venv/lib/python3.11/site-packages/hivemind/p2p/p2p_daemon.py
+```
+
 
