@@ -24,7 +24,7 @@ wget -O gensyn-mac-update.sh https://raw.githubusercontent.com/0xliangjiang/gens
 
 ### 网络超时
 ```shell
-sed -i 's/startup_timeout: float = 15,/startup_timeout: float = 60,/' ~/Desktop/gensyn/rl-swarm/.venv/lib/python3.11/site-packages/hivemind/p2p/p2p_daemon.py
+sed -i '' 's/startup_timeout: float = 15,/startup_timeout: float = 60,/' ~/Desktop/gensyn/rl-swarm/.venv/lib/python3.11/site-packages/hivemind/p2p/p2p_daemon.py
 ```
 
 
