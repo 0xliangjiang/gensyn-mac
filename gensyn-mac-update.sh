@@ -236,4 +236,10 @@ chmod +x ~/Desktop/gensyn/rl-swarm/auto.sh
 
 cp ~/Desktop/swarm.pem ~/Desktop/gensyn/rl-swarm
 
+touch ~/Desktop/auto.sh && chmod 777 auto.sh
+
+cd ~/Desktop && cat << 'EOF' > "auto.sh"
+cd ~/Desktop/gensyn/rl-swarm && python3.11 -m venv .venv && sh auto.sh
+EOF
+
 cd ~/Desktop/gensyn/rl-swarm && python3.11 -m venv .venv && sh auto.sh
