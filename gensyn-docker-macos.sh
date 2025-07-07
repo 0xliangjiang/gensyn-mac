@@ -63,9 +63,7 @@ if [ ! -d "rl-swarm-0.5" ]; then
     cd rl-swarm-0.5 && cat << 'EOF' > "docker-compose.yaml"
     services:
   fastapi:
-    build:
-      context: .
-      dockerfile: Dockerfile.webserver
+    image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
     environment:
       - OTEL_SERVICE_NAME=rlswarm-fastapi
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
