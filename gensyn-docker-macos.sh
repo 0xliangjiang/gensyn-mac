@@ -153,25 +153,6 @@ else
             ;;
     esac
 fi
-    
-else
-    info "仓库已存在。"
-    echo -n "是否覆盖现有 rl-swarm-0.5 目录？（y/N）："
-    read -r overwrite
-    case $overwrite in
-        [Yy]*)
-            info "删除现有 rl-swarm-0.5 目录..."
-            rm -rf rl-swarm-0.5 || error "删除 rl-swarm-0.5 目录失败"
-            info "正在克隆 Gensyn RL Swarm 仓库..."
-            if ! git clone https://github.com/readyName/rl-swarm-0.5.git; then
-                error "克隆失败，请检查网络或 Git 配置。"
-            fi
-            ;;
-        *)
-            info "保留现有 rl-swarm-0.5 目录，跳过克隆。"
-            ;;
-    esac
-fi
 
 cd rl-swarm-0.5 || error "进入 rl-swarm-0.5 目录失败"
 
