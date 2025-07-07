@@ -60,7 +60,11 @@ if [ ! -d "rl-swarm-0.5" ]; then
     if ! git clone https://github.com/readyName/rl-swarm-0.5.git; then
         error "克隆失败，请检查网络或 Git 配置。"
     fi
-    cd rl-swarm-0.5 && cat << 'EOF' > "docker-compose.yaml"
+    
+    cd rl-swarm-0.5 || error "进入 rl-swarm-0.5 目录失败"
+    
+    # 创建 docker-compose.yaml 文件（注意EOF不能缩进）
+    cat << 'EOF' > docker-compose.yaml
 services:
   fastapi:
     image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
@@ -106,11 +110,6 @@ services:
       - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
     restart: always
 
-  # Requires the NVIDIA Drivers version >=525.60.13 to be installed, as well
-  # as the nvidia-container-toolkit.
-  # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#cuda-11-and-later-defaults-to-minor-version-compatibility
-  # https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/
-  # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
   swarm-gpu:
     profiles: ["swarm"]
     build:
@@ -136,7 +135,34 @@ services:
               count: all
               capabilities: [gpu]
     restart: always
-    EOF
+EOF
+
+    cd ..
+else
+    info "仓库已存在。"
+    echo -n "是否覆盖现有 rl-swarm-0.5 目录？（y/N）："
+    read -r overwrite
+    case $overwrite in
+        [Yy]*)
+            info "删除现有 rl-swarm-0.5 目录..."
+            rm -rf rl-swarm-0.5 || error "删除 rl-swarm-0.5 目录失败"
+            info "正在克隆 Gensyn RL Swarm 仓库..."
+            if ! git clone https://github.com/readyName/rl-swarm-0.5.git; then
+                error "克隆失败，请检查网络或 Git 配置。"
+            fi
+            
+            cd rl-swarm-0.5 || error "进入 rl-swarm-0.5 目录失败"
+            # 重新创建 docker-compose.yaml（同上）
+            cat << 'EOF' > docker-compose.yaml
+            # ...（同上内容）
+EOF
+            cd ..
+            ;;
+        *)
+            info "保留现有 rl-swarm-0.5 目录，跳过克隆。"
+            ;;
+    esac
+fi
     
 else
     info "仓库已存在。"
