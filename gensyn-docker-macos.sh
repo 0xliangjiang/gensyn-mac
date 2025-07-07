@@ -61,81 +61,81 @@ if [ ! -d "rl-swarm-0.5" ]; then
         error "克隆失败，请检查网络或 Git 配置。"
     fi
     cd rl-swarm-0.5 && cat << 'EOF' > "docker-compose.yaml"
-    services:
-      fastapi:
-        image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
-        environment:
-          - OTEL_SERVICE_NAME=rlswarm-fastapi
-          - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-        depends_on:
-          - otel-collector
-        healthcheck:
-          test: ["CMD", "curl", "-f", "http://localhost:8080/api/healthz"]
-          interval: 30s
-          retries: 3
-    
-      otel-collector:
-        image: otel/opentelemetry-collector-contrib:0.120.0
-        ports:
-          - "4317:4317"  # OTLP gRPC
-          - "4318:4318"  # OTLP HTTP
-          - "55679:55679"  # Prometheus metrics (optional)
-        environment:
-          - OTEL_LOG_LEVEL=DEBUG
-        healthcheck:
-          test: ["CMD", "grpc_health_probe", "-addr=localhost:4317"]
-          interval: 5s
-          retries: 5
-    
-      swarm-cpu:
-        profiles: ["swarm"]
-        build:
-          context: .
-          dockerfile: containerfiles/swarm-node/swarm.containerfile
-          args:
-            - BASE_IMAGE=ubuntu:24.04
-        ports:
-          - 3000:3000
-        volumes:
-          - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
-          - ./user/keys:/home/gensyn/rl_swarm/keys
-          - ./user/configs:/home/gensyn/rl_swarm/configs
-          - ./user/logs:/home/gensyn/rl_swarm/logs
-        environment:
-          - HF_TOKEN=${HF_TOKEN}
-          - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
-        restart: always
-    
-      # Requires the NVIDIA Drivers version >=525.60.13 to be installed, as well
-      # as the nvidia-container-toolkit.
-      # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#cuda-11-and-later-defaults-to-minor-version-compatibility
-      # https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/
-      # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
-      swarm-gpu:
-        profiles: ["swarm"]
-        build:
-          context: .
-          dockerfile: containerfiles/swarm-node/swarm.containerfile
-          args:
-            - BASE_IMAGE=nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
-        ports:
-          - 3000:3000
-        volumes:
-          - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
-          - ./user/keys:/home/gensyn/rl_swarm/keys
-          - ./user/configs:/home/gensyn/rl_swarm/configs
-          - ./user/logs:/home/gensyn/rl_swarm/logs
-        environment:
-          - HF_TOKEN=${HF_TOKEN}
-          - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
-        deploy:
-          resources:
-            reservations:
-              devices:
-                - driver: nvidia
-                  count: all
-                  capabilities: [gpu]
-        restart: always
+services:
+  fastapi:
+    image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
+    environment:
+      - OTEL_SERVICE_NAME=rlswarm-fastapi
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on:
+      - otel-collector
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/healthz"]
+      interval: 30s
+      retries: 3
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    ports:
+      - "4317:4317"  # OTLP gRPC
+      - "4318:4318"  # OTLP HTTP
+      - "55679:55679"  # Prometheus metrics (optional)
+    environment:
+      - OTEL_LOG_LEVEL=DEBUG
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:4317"]
+      interval: 5s
+      retries: 5
+
+  swarm-cpu:
+    profiles: ["swarm"]
+    build:
+      context: .
+      dockerfile: containerfiles/swarm-node/swarm.containerfile
+      args:
+        - BASE_IMAGE=ubuntu:24.04
+    ports:
+      - 3000:3000
+    volumes:
+      - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
+      - ./user/keys:/home/gensyn/rl_swarm/keys
+      - ./user/configs:/home/gensyn/rl_swarm/configs
+      - ./user/logs:/home/gensyn/rl_swarm/logs
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
+    restart: always
+
+  # Requires the NVIDIA Drivers version >=525.60.13 to be installed, as well
+  # as the nvidia-container-toolkit.
+  # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#cuda-11-and-later-defaults-to-minor-version-compatibility
+  # https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/
+  # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+  swarm-gpu:
+    profiles: ["swarm"]
+    build:
+      context: .
+      dockerfile: containerfiles/swarm-node/swarm.containerfile
+      args:
+        - BASE_IMAGE=nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+    ports:
+      - 3000:3000
+    volumes:
+      - ./user/modal-login:/home/gensyn/rl_swarm/modal-login/temp-data
+      - ./user/keys:/home/gensyn/rl_swarm/keys
+      - ./user/configs:/home/gensyn/rl_swarm/configs
+      - ./user/logs:/home/gensyn/rl_swarm/logs
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - GENSYN_RESET_CONFIG=${GENSYN_RESET_CONFIG}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: always
     EOF
     
 else
