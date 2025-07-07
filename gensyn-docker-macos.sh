@@ -67,7 +67,9 @@ if [ ! -d "rl-swarm-0.5" ]; then
     cat << 'EOF' > docker-compose.yaml
 services:
   fastapi:
-    image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile.webserver
     environment:
       - OTEL_SERVICE_NAME=rlswarm-fastapi
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
@@ -93,11 +95,7 @@ services:
 
   swarm-cpu:
     profiles: ["swarm"]
-    build:
-      context: .
-      dockerfile: containerfiles/swarm-node/swarm.containerfile
-      args:
-        - BASE_IMAGE=ubuntu:24.04
+    image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
     ports:
       - 3000:3000
     volumes:
@@ -136,7 +134,6 @@ services:
               capabilities: [gpu]
     restart: always
 EOF
-
     cd ..
 else
     info "仓库已存在。"
@@ -150,13 +147,6 @@ else
             if ! git clone https://github.com/readyName/rl-swarm-0.5.git; then
                 error "克隆失败，请检查网络或 Git 配置。"
             fi
-            
-            cd rl-swarm-0.5 || error "进入 rl-swarm-0.5 目录失败"
-            # 重新创建 docker-compose.yaml（同上）
-            cat << 'EOF' > docker-compose.yaml
-            # ...（同上内容）
-EOF
-            cd ..
             ;;
         *)
             info "保留现有 rl-swarm-0.5 目录，跳过克隆。"
