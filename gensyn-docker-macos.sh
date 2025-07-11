@@ -57,11 +57,11 @@ fi
 # 检查 rl-swarm-0.5 目录是否存在
 if [ ! -d "rl-swarm-0.5" ]; then
     info "正在克隆 Gensyn RL Swarm 仓库..."
-    if ! git clone https://github.com/readyName/rl-swarm-0.5.git; then
+    if ! git clone https://github.com/readyName/rl-swarm-0.5.3.git; then
         error "克隆失败，请检查网络或 Git 配置。"
     fi
     
-    cd rl-swarm-0.5 || error "进入 rl-swarm-0.5 目录失败"
+    cd rl-swarm-0.5.3 || error "进入 rl-swarm-0.5.3 目录失败"
     
     # 创建 docker-compose.yaml 文件（注意EOF不能缩进）
     cat << 'EOF' > docker-compose.yaml
@@ -95,7 +95,7 @@ services:
 
   swarm-cpu:
     profiles: ["swarm"]
-    image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.1
+    image: registry.cn-hangzhou.aliyuncs.com/liangjiang-tools/gensyn:base-0.0.2
     ports:
       - 3000:3000
     volumes:
@@ -142,9 +142,9 @@ else
     case $overwrite in
         [Yy]*)
             info "删除现有 rl-swarm-0.5 目录..."
-            rm -rf rl-swarm-0.5 || error "删除 rl-swarm-0.5 目录失败"
+            rm -rf rl-swarm-0.5.3 || error "删除 rl-swarm-0.5.3 目录失败"
             info "正在克隆 Gensyn RL Swarm 仓库..."
-            if ! git clone https://github.com/readyName/rl-swarm-0.5.git; then
+            if ! git clone https://github.com/readyName/rl-swarm-0.5.3.git; then
                 error "克隆失败，请检查网络或 Git 配置。"
             fi
             ;;
@@ -154,7 +154,7 @@ else
     esac
 fi
 
-cd rl-swarm-0.5 || error "进入 rl-swarm-0.5 目录失败"
+cd rl-swarm-0.5.3 || error "进入 rl-swarm-0.5 目录失败"
 
 info "🚀 准备运行 swarm-cpu 容器..."
 
