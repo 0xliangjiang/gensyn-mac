@@ -54,8 +54,8 @@ else
     info "Docker Compose 已安装，版本：$(docker-compose --version)"
 fi
 
-# 检查 rl-swarm-0.5 目录是否存在
-if [ ! -d "rl-swarm-0.5" ]; then
+# 检查 rl-swarm-0.5.3 目录是否存在
+if [ ! -d "rl-swarm-0.5.3" ]; then
     info "正在克隆 Gensyn RL Swarm 仓库..."
     if ! git clone https://github.com/readyName/rl-swarm-0.5.3.git; then
         error "克隆失败，请检查网络或 Git 配置。"
@@ -137,7 +137,7 @@ EOF
     cd ..
 else
     info "仓库已存在。"
-    echo -n "是否覆盖现有 rl-swarm-0.5 目录？（y/N）："
+    echo -n "是否覆盖现有 rl-swarm-0.5.3 目录？（y/N）："
     read -r overwrite
     case $overwrite in
         [Yy]*)
@@ -158,31 +158,33 @@ cd rl-swarm-0.5.3 || error "进入 rl-swarm-0.5 目录失败"
 
 info "🚀 准备运行 swarm-cpu 容器..."
 
-MAX_RETRIES=100
-ATTEMPT=1
+cd ~/rl-swarm-0.5.3 && sh gensyn.sh
 
-while [ $ATTEMPT -le $MAX_RETRIES ]; do
-    info "尝试第 $ATTEMPT 次构建并运行 swarm-cpu..."
+# MAX_RETRIES=100
+# ATTEMPT=1
 
-    # 检查端口 3000 是否占用
-    PORT_PID=$(lsof -i :3000 -t || true)
-    if [ -n "$PORT_PID" ]; then
-        info "⚠️ 端口 3000 被进程 $PORT_PID 占用，尝试释放..."
-        kill -9 "$PORT_PID" && info "✅ 已成功释放端口 3000"
-    else
-        info "✅ 端口 3000 空闲"
-    fi
+# while [ $ATTEMPT -le $MAX_RETRIES ]; do
+#     info "尝试第 $ATTEMPT 次构建并运行 swarm-cpu..."
 
-    if docker-compose run --rm --build -Pit swarm-cpu; then
-        info "✅ 容器运行成功！"
-        break
-    else
-        info "⚠️ 第 $ATTEMPT 次失败，等待 3 秒后重试..."
-        ((ATTEMPT++))
-        sleep 3
-    fi
-done
+#     # 检查端口 3000 是否占用
+#     PORT_PID=$(lsof -i :3000 -t || true)
+#     if [ -n "$PORT_PID" ]; then
+#         info "⚠️ 端口 3000 被进程 $PORT_PID 占用，尝试释放..."
+#         kill -9 "$PORT_PID" && info "✅ 已成功释放端口 3000"
+#     else
+#         info "✅ 端口 3000 空闲"
+#     fi
 
-if [ $ATTEMPT -gt $MAX_RETRIES ]; then
-    error "❌ 多次尝试仍无法成功构建/运行容器，请检查 Dockerfile、网络连接或 compose 配置。"
-fi
+#     if docker-compose run --rm --build -Pit swarm-cpu; then
+#         info "✅ 容器运行成功！"
+#         break
+#     else
+#         info "⚠️ 第 $ATTEMPT 次失败，等待 3 秒后重试..."
+#         ((ATTEMPT++))
+#         sleep 3
+#     fi
+# done
+
+# if [ $ATTEMPT -gt $MAX_RETRIES ]; then
+#     error "❌ 多次尝试仍无法成功构建/运行容器，请检查 Dockerfile、网络连接或 compose 配置。"
+# fi
