@@ -6,24 +6,6 @@ set -e
 # Print commands as they are executed
 set -x
 
-echo "🧹 检查 Homebrew..."
-
-if ! command -v brew &> /dev/null; then
-    info "Homebrew 未安装，正在安装..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || error "Homebrew 安装失败"
-
-    # 添加到 shell 配置文件（根据芯片架构判断路径）
-    if [[ $(uname -m) == "arm64" ]]; then
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-        echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile
-        eval "$(/usr/local/bin/brew shellenv)"
-    fi
-else
-    info "Homebrew 已安装，版本：$(brew --version | head -n 1)"
-fi
-
 # Check Python environment
 echo "安装python3.11"
 brew install python@3.11
