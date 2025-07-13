@@ -240,7 +240,6 @@ echo ""
 
 # 启动主程序
 main
-
 EOF
 
 cd ~/Desktop/gensyn/rl-swarm && sh auto.sh
