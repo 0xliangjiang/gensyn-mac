@@ -23,9 +23,9 @@ echo "Setting up Python virtual environment..."
 python3.11 -m venv .venv
 
 
-
+cd ~/Desktop/gensyn/rl-swarm  && touch auto.sh && chmod 777 auto.sh
 # Write new configuration
-cd ~/Desktop/gensyn/rl-swarm  && touch auto.sh && chmod 777 auto.sh && cat << EOF > "auto.sh"
+cd ~/Desktop/gensyn/rl-swarm  && cat << EOF > "auto.sh"
 #!/bin/bash
 
 # Mac M4 自动监控重启脚本
