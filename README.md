@@ -13,9 +13,8 @@ brew install wget
 ### 一键执行脚本
 
 ```shell
-wget -O gensyn-mac.sh https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/refs/heads/main/gensyn-mac.sh && chmod +x gensyn-mac.sh && sh gensyn-mac.sh
+cd ~/Desktop && bash <(curl -fsSL https://raw.githubusercontent.com/0xliangjiang/gensyn-mac/refs/heads/main/gensyn-mac.sh)
 ```
-
 
 ### 一键执行更新脚本
 
