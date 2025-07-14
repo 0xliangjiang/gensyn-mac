@@ -33,8 +33,6 @@ echo "Setting up Python virtual environment..."
 python3.11 -m venv .venv
 
 
-# Write new configuration
-cd ~/Desktop/gensyn/rl-swarm  && cat << EOF > "auto.sh"
 # 创建新脚本（使用单引号防止变量展开）
 cd ~/Desktop/gensyn/rl-swarm && cat << 'EOF' > "auto.sh"
 #!/bin/bash
