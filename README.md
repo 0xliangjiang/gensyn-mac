@@ -9,6 +9,7 @@ gensyn mac一键启动脚本
 
 brew install wget
 
+
 ### 一键执行脚本
 
 ```shell
