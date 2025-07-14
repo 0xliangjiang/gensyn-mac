@@ -1,8 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 
+log_file="./deploy_rl_swarm_0.5.log"
+
+info() {
+    echo -e "[INFO] $*" | tee -a "$log_file"
+}
+
+error() {
+    echo -e "[ERROR] $*" >&2 | tee -a "$log_file"
+    exit 1
+}
+
+echo "🧹 检查 Homebrew..." | tee -a "$log_file"
+
 if ! command -v brew &> /dev/null; then
-    echo "Homebrew 未安装，正在安装..."
+    info "Homebrew 未安装，正在安装..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || error "Homebrew 安装失败"
 
     # 添加到 shell 配置文件（根据芯片架构判断路径）
@@ -14,7 +27,7 @@ if ! command -v brew &> /dev/null; then
         eval "$(/usr/local/bin/brew shellenv)"
     fi
 else
-    echo "Homebrew 已安装"
+    info "Homebrew 已安装，版本：$(brew --version | head -n 1)"
 fi
 
 # Check Python environment
