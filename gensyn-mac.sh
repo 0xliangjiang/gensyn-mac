@@ -1,12 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || error "Homebrew 安装失败"
+if ! command -v brew &> /dev/null; then
+    echo "Homebrew 未安装，正在安装..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || error "Homebrew 安装失败"
+
+    # 添加到 shell 配置文件（根据芯片架构判断路径）
+    if [[ $(uname -m) == "arm64" ]]; then
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    else
+        echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+else
+    echo "Homebrew 已安装"
+fi
 
 # Check Python environment
 echo "安装python3.11"
 brew install python@3.11
-echo "Python version: $(python3 --version)"
 
 mkdir -p ~/Desktop/gensyn
 
