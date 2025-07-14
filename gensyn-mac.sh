@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if ! command -v brew &> /dev/null; then
-    info "Homebrew 未安装，正在安装..."
+    echo "Homebrew 未安装，正在安装..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || error "Homebrew 安装失败"
 
     # 添加到 shell 配置文件（根据芯片架构判断路径）
@@ -14,7 +14,7 @@ if ! command -v brew &> /dev/null; then
         eval "$(/usr/local/bin/brew shellenv)"
     fi
 else
-    info "Homebrew 已安装，版本：$(brew --version | head -n 1)"
+    echo "Homebrew 已安装，版本：$(brew --version | head -n 1)"
 fi
 
 # Check Python environment
