@@ -14,7 +14,7 @@ if ! command -v brew &> /dev/null; then
         eval "$(/usr/local/bin/brew shellenv)"
     fi
 else
-    echo "Homebrew 已安装，版本：$(brew --version | head -n 1)"
+    echo "Homebrew 已安装"
 fi
 
 # Check Python environment
