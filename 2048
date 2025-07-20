@@ -1,0 +1,413 @@
+(function () {
+    const config = {
+        targetScore: 1000,
+        moveDelay: 200,
+        pattern: [0, 1, 0, 1, 2, 1],
+        debug: true,
+        autoConfirmScore: true,
+        autoRestart: true,
+        maxLogs: 100
+    };
+
+    let gameState = {
+        running: false,
+        score: 0,
+        moveCount: 0,
+        patternIndex: 0,
+        lastScore: 0,
+        staleCount: 0,
+        gameLoopTimer: null,
+        cachedElements: {}
+    };
+
+    const logHistory = [];
+    let logCount = 0;
+
+    const log = (...args) => {
+        if (!config.debug) return;
+
+        logCount++;
+        const message = `[syskey-2048Bot] ${args.join(' ')}`;
+        console.log(message);
+
+        logHistory.push({
+            time: new Date(),
+            message
+        });
+
+        if (logHistory.length > config.maxLogs) {
+            logHistory.shift();
+        }
+
+        if (logCount % 100 === 0) {
+            console.clear();
+            console.log(`[2048Bot] Cleared console, total logs: ${logCount}`);
+            logHistory.forEach(entry => {
+                console.log(`${entry.time.toISOString().substr(11, 8)} ${entry.message}`);
+            });
+        }
+    };
+
+    const DIRECTIONS = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+
+    const simulateKeyPress = (key) => {
+        log(`Simulating key: ${key}`);
+        const event = new KeyboardEvent('keydown', {
+            key: key,
+            code: key,
+            bubbles: true,
+            cancelable: true
+        });
+        document.dispatchEvent(event);
+    };
+
+    function getCachedElement(key, finder) {
+        if (gameState.cachedElements[key] && document.contains(gameState.cachedElements[key])) {
+            return gameState.cachedElements[key];
+        }
+
+        const element = finder();
+        if (element) {
+            gameState.cachedElements[key] = element;
+        }
+        return element;
+    }
+
+    function findElementByText(text, exactMatch = false) {
+        const cacheKey = `text_${text}_${exactMatch}`;
+
+        return getCachedElement(cacheKey, () => {
+            let found = null;
+            document.querySelectorAll('div, button').forEach(el => {
+                const elText = el.textContent.trim();
+                if ((exactMatch && elText === text) ||
+                    (!exactMatch && elText.includes(text))) {
+                    found = el;
+                }
+            });
+            return found;
+        });
+    }
+
+    function findScoreElement() {
+        return getCachedElement('scoreElement', () => {
+            let scoreElement = null;
+
+            document.querySelectorAll('div').forEach(div => {
+                if (div.textContent === 'SCORE') {
+                    const parent = div.parentElement;
+                    if (parent) {
+                        const numbers = parent.querySelectorAll('div');
+                        for (const el of numbers) {
+                            if (/^\d+$/.test(el.textContent.trim())) {
+                                scoreElement = el;
+                                log(`Found score element: ${el.textContent}`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!scoreElement) {
+                document.querySelectorAll('div').forEach(div => {
+                    const text = div.textContent.trim();
+                    if (/^\d+$/.test(text) && text.length < 6) {
+                        scoreElement = div;
+                    }
+                });
+            }
+
+            return scoreElement;
+        });
+    }
+
+    function getCurrentScore() {
+        const scoreElement = findScoreElement();
+        if (!scoreElement) return 0;
+
+        const text = scoreElement.textContent.trim();
+        const score = parseInt(text, 10);
+        return isNaN(score) ? 0 : score;
+    }
+
+    function clearAllTimers() {
+        if (gameState.gameLoopTimer) {
+            clearTimeout(gameState.gameLoopTimer);
+            gameState.gameLoopTimer = null;
+        }
+
+        if (gameState.confirmTimer) {
+            clearTimeout(gameState.confirmTimer);
+            gameState.confirmTimer = null;
+        }
+
+        if (gameState.restartTimer) {
+            clearTimeout(gameState.restartTimer);
+            gameState.restartTimer = null;
+        }
+    }
+
+    function isGameOver() {
+        const gameOverElement = findElementByText('Game Over', false);
+        if (gameOverElement) return true;
+
+        const confirmScoreButton = findElementByText('CONFIRM SCORE', true);
+        if (confirmScoreButton) return true;
+
+        const tryAgainButton = findElementByText('Try Again', true);
+        if (tryAgainButton) return true;
+
+        return false;
+    }
+
+    function handleGameOver() {
+        log('Game over detected, preparing to handle...');
+
+        gameState.running = false;
+        clearAllTimers();
+
+        const currentScore = getCurrentScore();
+        log(`Game over, final score: ${currentScore}, highest tile: ${getHighestTile() || 'unknown'}`);
+        log(`Total moves this game: ${gameState.moveCount}`);
+        log(`Game over, pausing for 5 seconds...`);
+
+        setTimeout(() => {
+            log(`5 second pause ended, continuing game over handling`);
+
+            if (currentScore >= config.targetScore) {
+                log(`🎉 Reached target score ${config.targetScore}! Preparing to submit score`);
+
+                if (config.autoConfirmScore) {
+                    const confirmScoreButton = findElementByText('CONFIRM SCORE', true);
+                    if (confirmScoreButton) {
+                        log('Clicking confirm score button (CONFIRM SCORE)');
+                        confirmScoreButton.click();
+
+                        gameState.confirmTimer = setTimeout(() => {
+                            const confirmButton = findElementByText('Confirm', true);
+                            if (confirmButton) {
+                                log('Clicking secondary confirm button (Confirm)');
+                                confirmButton.click();
+
+                                gameState.restartTimer = setTimeout(() => {
+                                    if (config.autoRestart) {
+                                        log('Submission complete, preparing to restart game');
+                                        restartGame();
+                                    }
+                                }, 2500);
+                            } else {
+                                log('Secondary confirm button not found, trying to continue...');
+                                if (config.autoRestart) {
+                                    restartGame();
+                                }
+                            }
+                        }, 1500);
+
+                        return;
+                    } else {
+                        log('Confirm score button not found, trying other methods');
+                    }
+                }
+            } else {
+                log(`Score (${currentScore}) did not reach target (${config.targetScore}), not submitting, restarting`);
+            }
+
+            if (config.autoRestart) {
+                const tryAgainButton = findElementByText('Try Again', true);
+                if (tryAgainButton) {
+                    log('Found and clicking try again button');
+                    tryAgainButton.click();
+
+                    gameState.restartTimer = setTimeout(() => {
+                        resetGameState();
+                        gameState.running = true;
+                        startGameLoop();
+                        log('Game has been restarted');
+                    }, 1500);
+
+                    return;
+                } else {
+                    log('Try Again button not found, looking for New Game button');
+                }
+
+                restartGame();
+            }
+        }, 5000);
+    }
+
+    function getHighestTile() {
+        try {
+            let highestNumber = 0;
+            document.querySelectorAll('.tile').forEach(tile => {
+                const tileText = tile.textContent.trim();
+                const tileValue = parseInt(tileText, 10);
+                if (!isNaN(tileValue) && tileValue > highestNumber) {
+                    highestNumber = tileValue;
+                }
+            });
+            return highestNumber || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function moveWithPattern() {
+        const directionIndex = config.pattern[gameState.patternIndex];
+        simulateKeyPress(DIRECTIONS[directionIndex]);
+
+        gameState.patternIndex = (gameState.patternIndex + 1) % config.pattern.length;
+    }
+
+    function resetGameState() {
+        gameState.moveCount = 0;
+        gameState.patternIndex = 0;
+        gameState.staleCount = 0;
+        gameState.lastScore = 0;
+
+        gameState.cachedElements = {};
+    }
+
+    function restartGame() {
+        log('Attempting to restart game');
+
+        clearAllTimers();
+
+        const newGameButton = findElementByText('New Game', true);
+        if (newGameButton) {
+            newGameButton.click();
+            log('Clicked new game button');
+
+            resetGameState();
+
+            gameState.restartTimer = setTimeout(() => {
+                gameState.running = true;
+                startGameLoop();
+                log('Game loop restarted');
+            }, 2000);
+
+            return true;
+        } else {
+            log('New game button not found');
+            return false;
+        }
+    }
+
+    function startGameLoop() {
+        if (gameState.gameLoopTimer) {
+            clearTimeout(gameState.gameLoopTimer);
+        }
+
+        gameLoop();
+    }
+
+    function gameLoop() {
+        if (!gameState.running) return;
+
+        if (isGameOver()) {
+            handleGameOver();
+            return;
+        }
+
+        try {
+            const currentScore = getCurrentScore();
+
+            if (currentScore !== gameState.lastScore) {
+                log(`Current score: ${currentScore}, move count: ${gameState.moveCount}`);
+            }
+
+            if (currentScore === gameState.lastScore) {
+                gameState.staleCount++;
+
+                if (gameState.staleCount % 10 === 0) {
+                    log(`Score unchanged: ${gameState.staleCount}/40`);
+                }
+
+                if (gameState.staleCount > 40) {
+                    log('Game may be stuck, moving up to break deadlock');
+                    simulateKeyPress(DIRECTIONS[3]);
+                    gameState.staleCount = 0;
+                }
+            } else {
+                gameState.staleCount = 0;
+            }
+
+            gameState.lastScore = currentScore;
+
+            if (currentScore >= config.targetScore && !gameState.targetReached) {
+                log(`🎉 Reached target score ${config.targetScore}! Waiting for game to end`);
+                gameState.targetReached = true;
+            }
+
+            moveWithPattern();
+            gameState.moveCount++;
+
+            gameState.gameLoopTimer = setTimeout(gameLoop, config.moveDelay);
+        } catch (err) {
+            log(`Game loop error: ${err.message}`);
+            gameState.gameLoopTimer = setTimeout(gameLoop, config.moveDelay * 2);
+        }
+    }
+
+    function manualMove(directionIndex) {
+        if (directionIndex >= 0 && directionIndex < 4) {
+            simulateKeyPress(DIRECTIONS[directionIndex]);
+            return true;
+        }
+        return false;
+    }
+
+    function start() {
+        log('Starting 2048 game automation script - optimized version');
+
+        stop();
+
+        resetGameState();
+        gameState.running = true;
+        gameState.targetReached = false;
+
+        startGameLoop();
+    }
+
+    function stop() {
+        log('Stopping 2048 game automation script');
+        gameState.running = false;
+        clearAllTimers();
+    }
+
+    function getMemoryUsage() {
+        if (window.performance && window.performance.memory) {
+            const memory = window.performance.memory;
+            return {
+                totalJSHeapSize: (memory.totalJSHeapSize / (1024 * 1024)).toFixed(2) + ' MB',
+                usedJSHeapSize: (memory.usedJSHeapSize / (1024 * 1024)).toFixed(2) + ' MB',
+                jsHeapSizeLimit: (memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(2) + ' MB'
+            };
+        }
+        return 'Browser does not support memory monitoring';
+    }
+
+    function cleanup() {
+        stop();
+        gameState.cachedElements = {};
+        while (logHistory.length > 0) logHistory.pop();
+        console.clear();
+        log('Cleanup complete, resources released');
+    }
+
+    window.game2048Bot = {
+        start,
+        stop,
+        restart: restartGame,
+        right: () => manualMove(0),
+        down: () => manualMove(1),
+        left: () => manualMove(2),
+        up: () => manualMove(3),
+        config,
+        getMemory: getMemoryUsage,
+        cleanup
+    };
+
+    log('2048 game script loaded. Starting automatic play!');
+    start();
+})(); 
